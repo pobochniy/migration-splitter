@@ -1,0 +1,16 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MigrationSplitter", "MigrationSplitter\MigrationSplitter.csproj", "{B2F69256-F84D-48CC-8639-964DF56FD87F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B2F69256-F84D-48CC-8639-964DF56FD87F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B2F69256-F84D-48CC-8639-964DF56FD87F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B2F69256-F84D-48CC-8639-964DF56FD87F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B2F69256-F84D-48CC-8639-964DF56FD87F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
