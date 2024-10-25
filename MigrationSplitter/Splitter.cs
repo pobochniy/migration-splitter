@@ -2,62 +2,25 @@ using System.IO.Compression;
 using System.Text;
 
 namespace MigrationSplitter;
-
+public record MigrationInfo(string FileName, string DatabaseName, int Min, int Max);
 public static class Splitter
 {
-    private const string ScriptTemplate = @"
-        use {0};
-
-        insert into orders_checkinfo (`UUId`,
-              OrderId, OrderUUId, CheckType,
-              CheckId, CashBoxSessionId, CashBoxSessionUUId,
-              CheckPrintDateTime, TotalPrice, CreatedDateTime,
-              CreatedDateTimeUTC, CreatedByUserId, CreatedByUserUUId,
-              PaymentType, IsActual, IsLast, IsReprint,
-              IsLastSaleCheck, IsLastRefundCheck, FiscalizedCheckData,
-              CheckSnapshot, ReceiptIdentifier, HasPrinted)
-        select archive.`UUId`,
-               archive.`OrderId`,
-               archive.`OrderUUId`,
-               archive.`CheckType`,
-               archive.`CheckId`,
-               archive.`CashBoxSessionId`,
-               archive.`CashBoxSessionUUId`,
-               archive.`CheckPrintDateTime`,
-               archive.`TotalPrice`,
-               archive.`CreatedDateTime`,
-               archive.`CreatedDateTimeUTC`,
-               archive.`CreatedByUserId`,
-               archive.`CreatedByUserUUId`,
-               archive.`PaymentType`,
-               archive.`IsActual`,
-               archive.`IsLast`,
-               archive.`IsReprint`,
-               archive.`IsLastSaleCheck`,
-               archive.`IsLastRefundCheck`,
-               archive.`FiscalizedCheckData`,
-               archive.`CheckSnapshot`,
-               archive.`ReceiptIdentifier`,
-               archive.`HasPrinted`
-        from orders_checkinfo_archive archive
-        left join orders_checkinfo origin on archive.UUId = origin.UUId
-        where archive.CashBoxSessionId >= {1}
-          and archive.CashBoxSessionId < {2}
-          and origin.UUId is null;
-    ";
-    
-    public static void GenerateFiles(string country, int maxValue, int limit = 100)
+    public static void GenerateFiles(string template, MigrationInfo info, int batchSize = 5000)
     {
-        var interval = 0;
+        var min = 0;
+        var count = 1;
         using var memoryStream = new MemoryStream();
         using (var zipArchive = new ZipArchive(memoryStream, ZipArchiveMode.Create, true))
         {
-            while (interval <= maxValue)
+            while (min <= info.Max)
             {
-                var script = String.Format(ScriptTemplate, country, interval, interval + limit);
-                var demoFile = zipArchive.CreateEntry($"{interval}.sql");
+                var script = template
+                    .Replace("{database}", info.DatabaseName)
+                    .Replace("{min}", min.ToString())
+                    .Replace("{max}", Math.Min(min + batchSize - 1, info.Max).ToString());
+                var file = zipArchive.CreateEntry($"{info.FileName}_{count.ToString().PadLeft(6, '0')}.sql");
 
-                using (var entryStream = demoFile.Open())
+                using (var entryStream = file.Open())
                 {
                     using (var streamWriter = new StreamWriter(entryStream))
                     {
@@ -65,11 +28,12 @@ public static class Splitter
                     }
                 }
 
-                interval += limit;
+                min += batchSize;
+                count++;
             }
         }
 
-        var zipName = string.Format(Settings.OutputZipPathTemplate, country);
+        var zipName = $"{info.FileName}.zip";
         File.WriteAllBytes(zipName, memoryStream.ToArray());
     }
 }
