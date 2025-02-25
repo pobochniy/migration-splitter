@@ -33,7 +33,7 @@ public static class Splitter
             }
         }
 
-        var zipName = $"{info.FileName}.zip";
+        var zipName = $"/Users/viktorpobochniy/proj/migrations-temp/ordercomposition_customization_{info.FileName}.zip";
         File.WriteAllBytes(zipName, memoryStream.ToArray());
     }
 }
